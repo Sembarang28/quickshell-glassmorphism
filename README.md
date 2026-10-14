@@ -14,6 +14,17 @@ This config is designed to run under niri, but it can also be used on its own on
 
 Without niri, the workspace and focused-app widgets will be empty, and the glassmorphism blur will not appear. Everything else works.
 
+## Launcher (Spotlight-style)
+
+Open it with `Alt+Space` or `Mod+D`. Start typing and the list shows:
+
+- **Apps:** matching desktop applications, as before.
+- **Links:** type a URL or a bare domain (`github.com`) and press Enter to open it in Firefox.
+- **Calculator:** type an expression such as `12*7+3` or `sqrt(144)` to see the result; press Enter to copy it.
+- **Web search:** `Search DuckDuckGo for "…"` is always the last row; Enter opens it in Firefox.
+
+Queries are passed to programs as arguments and URL-encoded, never through a shell.
+
 ## Features
 
 - **Top bar**
@@ -66,6 +77,9 @@ Each theme folder contains a `shared` symlink to the root `shared/` directory. Q
 - `ddcutil` for brightness on external monitors (your user must be in the `i2c` group)
 - `nvidia-smi` (optional, for GPU stats)
 - `curl` (optional, for the weather widget via wttr.in)
+- `libqalculate` (`qalc`) for calculations in the launcher
+- `wl-clipboard` (`wl-copy`) to copy calculator results
+- `firefox` for opening links and web searches from the launcher
 - `systemd` for reboot, poweroff, and hibernate
 - Quicksand font installed system-wide
 

@@ -32,7 +32,7 @@ PanelWindow {
     focus: true
     Keys.onEscapePressed: Sys.close()
 
-    Launcher { id: launcher; x: 12; y: 10; visible: Sys.panel === "launcher" }
+    Launcher { id: launcher; anchors.centerIn: parent; visible: Sys.panel === "launcher" }
     SettingsPanel { id: settings; anchors.centerIn: parent; open: Sys.panel === "settings" }
 
     WifiPopup { id: wifi; anchors { right: parent.right; rightMargin: 150; top: parent.top; topMargin: 10 } open: Sys.panel === "wifi" }

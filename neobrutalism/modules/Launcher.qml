@@ -19,10 +19,15 @@ Item {
       .sort((a, b) => a.name.localeCompare(b.name))
   }
 
+  readonly property var items: Spotlight.combine(filtered)
+
   function reset() { field.text = ""; list.currentIndex = 0; field.forceActiveFocus() }
   function launch() {
-    var e = root.filtered[list.currentIndex]
-    if (e) { e.execute(); Sys.close() }
+    var e = root.items[list.currentIndex]
+    if (!e) return
+    if (e.kind !== undefined) Spotlight.activate(e)
+    else e.execute()
+    Sys.close()
   }
   onVisibleChanged: if (visible) reset()
 
@@ -50,7 +55,7 @@ Item {
           font.family: Theme.font; font.bold: true; font.pixelSize: 15
           color: Theme.ink
           clip: true
-          onTextChanged: list.currentIndex = 0
+          onTextChanged: { list.currentIndex = 0; Spotlight.query = field.text }
           Keys.onDownPressed: list.currentIndex = Math.min(list.count - 1, list.currentIndex + 1)
           Keys.onUpPressed: list.currentIndex = Math.max(0, list.currentIndex - 1)
           Keys.onReturnPressed: root.launch()
@@ -59,7 +64,7 @@ Item {
           Text {
             visible: field.text === ""
             anchors.verticalCenter: parent.verticalCenter
-            text: "Cari aplikasi..."
+            text: "Search apps, calculate, or paste a link..."
             color: "#6b6b6b"
             font: field.font
           }
@@ -72,7 +77,7 @@ Item {
         height: parent.height - 48
         clip: true
         spacing: 4
-        model: root.filtered
+        model: root.items
         currentIndex: 0
         highlightMoveDuration: 0
         delegate: Rectangle {
@@ -87,11 +92,18 @@ Item {
             id: ic
             x: 8; anchors.verticalCenter: parent.verticalCenter
             implicitSize: 24
-            source: Quickshell.iconPath(modelData.icon, "application-x-executable")
+            visible: modelData.kind === undefined
+            source: modelData.kind === undefined ? Quickshell.iconPath(modelData.icon, "application-x-executable") : ""
+          }
+          Icon {
+            visible: modelData.kind !== undefined
+            name: modelData.kind !== undefined ? modelData.icon : ""
+            size: 18
+            x: 11; anchors.verticalCenter: parent.verticalCenter
           }
           Text {
             anchors { left: ic.right; leftMargin: 10; right: parent.right; rightMargin: 8; verticalCenter: parent.verticalCenter }
-            text: modelData.name
+            text: modelData.kind !== undefined ? modelData.title : modelData.name
             elide: Text.ElideRight
             font.family: Theme.font; font.bold: true; font.pixelSize: 13
             color: Theme.ink
