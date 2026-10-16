@@ -86,6 +86,41 @@ Singleton {
     Quickshell.execDetached(["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", (volume / 100).toFixed(2)])
   }
   function toggleMute() { run(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"]) }
+
+  // ---- on-screen display: volume / brightness pill shown after a shortcut ----
+  // osd = "volume" | "brightness" | "" (empty = hidden); the pill reads volume/brightness/muted live
+  property string osd: ""
+  Timer { id: osdHide; interval: 1500; onTriggered: root.osd = "" }
+  function showOsd(kind) { osd = kind; osdHide.restart() }
+  function volumeStep(d) {
+    Quickshell.execDetached(["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", (Math.abs(d) / 100).toFixed(2) + (d > 0 ? "+" : "-"), "-l", "1.0"])
+    showOsd("volume")
+    volumeRead.restart()
+  }
+  function volumeMute() {
+    Quickshell.execDetached(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"])
+    showOsd("volume")
+    volumeRead.restart()
+  }
+  function brightnessStep(d) {
+    brightness = Math.max(0, Math.min(100, Math.round(brightness + d)))
+    ddcSet.restart()
+    showOsd("brightness")
+  }
+  // wpctl dibaca sebentar setelah tombol dilepas, supaya OSD menampilkan nilai hasil akhir
+  Timer { id: volumeRead; interval: 120; onTriggered: volumeGet.running = true }
+  Process {
+    id: volumeGet
+    command: ["wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@"]
+    stdout: StdioCollector {
+      onStreamFinished: {
+        var m = text.match(/([0-9.]+)/)
+        if (m) root.volume = Math.round(Number(m[1]) * 100)
+        root.muted = text.indexOf("MUTED") >= 0
+      }
+    }
+  }
+
   function toggleWifi() { run(["nmcli", "radio", "wifi", wifi ? "off" : "on"]) }
   function toggleBt() { run(["bluetoothctl", "power", bt ? "off" : "on"]) }
   function toggleAirplane() { run(["rfkill", airplane ? "unblock" : "block", "all"]) }
