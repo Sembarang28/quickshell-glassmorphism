@@ -13,7 +13,7 @@ Singleton {
   property string panel: ""
   function toggle(name) { panel = (panel === name ? "" : name) }
   function close() { panel = "" }
-  onPanelChanged: if (panel === "settings") { specsProc.running = true; if (weather === "") weatherProc.running = true }
+  onPanelChanged: if (panel === "settings" || panel === "prefs") { specsProc.running = true; if (weather === "") weatherProc.running = true }
 
   // ---- specs & weather (dashboard) ----
   property var specs: ({ os: "-", host: "-", shell: "-", uptime: "-", pkgs: "-" })
@@ -49,6 +49,18 @@ Singleton {
   property real disk: 0
   property string cpuTemp: "--"
   property string gpuTemp: "--"
+  property string ramTemp: "--"
+  property string diskTemp: "--"
+  property real diskRead: 0     // bytes/s
+  property real diskWrite: 0
+  property real netDown: 0
+  property real netUp: 0
+  property var _io: null
+  function fmtRate(b) {
+    var u = ["B/s", "KB/s", "MB/s", "GB/s"], i = 0
+    while (b >= 1024 && i < 3) { b /= 1024; i++ }
+    return (b >= 100 || i === 0 ? Math.round(b) : b.toFixed(1)) + " " + u[i]
+  }
 
   // ---- controls ----
   property int volume: 0
@@ -162,6 +174,21 @@ Singleton {
         if (d.disk) root.disk = Number(d.disk)
         root.cpuTemp = d.ctemp ? Math.round(Number(d.ctemp)) + "°" : "--"
         if (d.gpu !== undefined) root.gpu = Number(d.gpu)
+        root.ramTemp = d.rtemp ? Math.round(Number(d.rtemp)) + "°" : "--"
+        root.diskTemp = d.dtemp ? Math.round(Number(d.dtemp)) + "°" : "--"
+        if (d.dio && d.net) {
+          var a = d.dio.split(" ").map(Number), n = d.net.split(" ").map(Number), now = Date.now()
+          if (root._io) {
+            var dt = (now - root._io.t) / 1000
+            if (dt > 0) {
+              root.diskRead = Math.max(0, (a[0] - root._io.a[0]) / dt)
+              root.diskWrite = Math.max(0, (a[1] - root._io.a[1]) / dt)
+              root.netDown = Math.max(0, (n[0] - root._io.n[0]) / dt)
+              root.netUp = Math.max(0, (n[1] - root._io.n[1]) / dt)
+            }
+          }
+          root._io = { t: now, a: a, n: n }
+        }
         root.gpuTemp = d.gtemp ? Math.round(Number(d.gtemp)) + "°" : "--"
         if (d.vol) {
           var m = d.vol.match(/([0-9.]+)/)

@@ -1,6 +1,8 @@
 # Quickshell config
 
-A [Quickshell](https://quickshell.org) bar, app launcher, and settings panel for [niri](../niri/README.md). It ships two themes that share the same logic and layout:
+A [Quickshell](https://quickshell.org) bar, app launcher, and settings panel for [niri](../niri/README.md). It ships three themes that share the same logic:
+
+- **macos**: macOS-style menu bar, Apple menu, Control Center, Spotlight launcher, volume HUD and a System Settings window (dark appearance). Enable with `~/.config/niri/scripts/theme.sh macos`.
 
 - **glassmorphism** (default): translucent, blurred pills and popups with pastel accents.
 - **neobrutalism**: thick borders, hard offset shadows, and bold colours.
